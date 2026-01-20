@@ -1,0 +1,44 @@
+name: emp_leave_app
+description: "Employee Leave Management Mobile App"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.4.10
+
+  # HTTP Client
+  dio: ^5.4.0
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+
+  # UI Enhancements
+  google_fonts: ^6.1.0
+  flutter_animate: ^4.5.0
+  lottie: ^3.1.0
+
+  # Form & Validation
+  intl: ^0.19.0
+
+  # Icons
+  lucide_icons: ^0.257.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
