@@ -5,9 +5,9 @@ class ApiConstants {
   // Auto-detect platform for correct URL
   static String get baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:5000/api'; // Flutter Web
+      return 'http://localhost:5082/api'; // Flutter Web
     } else {
-      return 'http://10.0.2.2:5000/api'; // Android Emulator
+      return 'http://10.0.2.2:5082/api'; // Android Emulator
     }
   }
   // For production: 'https://your-api.com/api'
