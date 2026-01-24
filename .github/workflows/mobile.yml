@@ -1,0 +1,60 @@
+name: Mobile CI/CD
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  quality-and-build:
+    name: Build & Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🚀 Checkout Code
+      uses: actions/checkout@v4
+    
+    - name: 🛠️ Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 'latest'
+        channel: 'stable'
+        cache: true # Built-in caching for Flutter SDK
+        
+    - name: 📦 Cache Pub Packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.pub-cache
+        key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-pub-
+
+    - name: 📥 Get Dependencies
+      run: flutter pub get
+      
+    - name: 🔍 Static Analysis
+      run: flutter analyze
+      
+    - name: 🧪 Run Unit Tests
+      run: flutter test --coverage
+      
+    - name: 📱 Build Android APK (Release)
+      run: flutter build apk --release
+      
+    - name: 🌐 Build Flutter Web
+      run: flutter build web --release
+
+    - name: 📤 Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-release
+        path: build/app/outputs/flutter-apk/app-release.apk
+        retention-days: 7
+
+    - name: 📤 Upload Web Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-release
+        path: build/web
+        retention-days: 7
