@@ -2,15 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/api/api_client.dart';
+import 'core/services/fcm_service.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'providers/auth_provider.dart';
 import 'features/auth/login_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'providers/notification_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize API client
   await ApiClient().init();
+
+  // Initialize Firebase (Requires google-services.json for Android/iOS)
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(FCMService.onBackgroundMessage);
+    await FCMService().init();
+  } catch (e) {
+    debugPrint(
+      '⚠️ Firebase not initialized: $e (This is expected if config files are missing)',
+    );
+  }
 
   runApp(const ProviderScope(child: EmployeeLeaveApp()));
 }
@@ -29,7 +45,35 @@ class _EmployeeLeaveAppState extends ConsumerState<EmployeeLeaveApp> {
     // Check for existing auth
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authProvider.notifier).checkAuth();
+      _setupNotificationListener();
     });
+  }
+
+  void _setupNotificationListener() {
+    ref
+        .read(notificationServiceProvider)
+        .onNotificationReceived = (title, message) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(message),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.blueAccent,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    };
   }
 
   @override
@@ -43,8 +87,35 @@ class _EmployeeLeaveAppState extends ConsumerState<EmployeeLeaveApp> {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       home: authState.isAuthenticated
-          ? const DashboardScreen()
+          ? const _AuthenticatedApp()
           : const LoginScreen(),
     );
+  }
+}
+
+class _AuthenticatedApp extends ConsumerStatefulWidget {
+  const _AuthenticatedApp();
+
+  @override
+  ConsumerState<_AuthenticatedApp> createState() => _AuthenticatedAppState();
+}
+
+class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationServiceProvider).initSignalR();
+      // Register FCM Token
+      final userId = ref.read(authProvider).userId;
+      if (userId != null) {
+        FCMService().registerToken(userId);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const DashboardScreen();
   }
 }

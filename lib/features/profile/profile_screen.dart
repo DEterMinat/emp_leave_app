@@ -98,8 +98,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             onPressed: () {
               setState(() {
                 _isEditing = !_isEditing;
-                if (_isEditing)
+                if (_isEditing) {
                   _populateControllers(); // Reset to current data on edit start
+                }
               });
             },
           ),

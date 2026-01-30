@@ -135,7 +135,7 @@ class _LeaveRequestScreenState extends ConsumerState<LeaveRequestScreen> {
                     const SizedBox(height: 12),
                     leaveTypesAsync.when(
                       data: (types) => DropdownButtonFormField<String>(
-                        value: _selectedLeaveTypeId,
+                        initialValue: _selectedLeaveTypeId,
                         decoration: InputDecoration(
                           hintText: 'เลือกประเภทการลา',
                           filled: true,

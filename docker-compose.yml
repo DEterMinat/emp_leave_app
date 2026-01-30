@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: 
+      context: ../../emp_leave_backend
+      dockerfile: Dockerfile
+    environment:
+      - ConnectionStrings__MongoDb=${MONGODB_URL}
+      - MongoDB__DatabaseName=${DB_NAME}
+    expose:
+      - "8080"
+
+  mobile-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    expose:
+      - "80"
+
+  nginx-lb:
+    image: nginx:alpine
+    container_name: nginx-mobile-entry
+    ports:
+      - "8081:80" # Using 8081 to avoid conflict if other services are up
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - mobile-web
+

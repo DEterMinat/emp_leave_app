@@ -58,3 +58,6 @@ jobs:
         name: web-release
         path: build/web
         retention-days: 7
+
+    - name: 🐳 Build Docker Image (Web)
+      run: docker build -t emp-leave-mobile:latest ./Mobile/emp_leave_app
