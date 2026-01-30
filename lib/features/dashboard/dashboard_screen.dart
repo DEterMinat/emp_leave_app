@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leave_provider.dart';
-import '../auth/login_screen.dart';
+
 import '../leave/leave_history_screen.dart';
 import '../leave/leave_request_screen.dart';
+import '../profile/profile_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -41,14 +42,21 @@ class DashboardScreen extends ConsumerWidget {
               child: Row(
                 children: [
                   // User Avatar
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.logoGradient,
-                      borderRadius: BorderRadius.circular(24),
+                  InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
                     ),
-                    child: const Icon(Icons.person, color: Colors.white),
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.logoGradient,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: const Icon(Icons.person, color: Colors.white),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   // User Info
@@ -307,17 +315,15 @@ class DashboardScreen extends ConsumerWidget {
                     },
                   ),
                   _NavItem(
-                    icon: Icons.logout,
-                    label: 'Logout',
-                    onTap: () async {
-                      await ref.read(authProvider.notifier).logout();
-                      if (context.mounted) {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        );
-                      }
+                    icon: Icons.person_outline,
+                    label: 'Profile',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfileScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],

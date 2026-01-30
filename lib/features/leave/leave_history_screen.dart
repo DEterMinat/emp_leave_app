@@ -63,6 +63,49 @@ class LeaveHistoryScreen extends ConsumerWidget {
                   endDate: request.endDate,
                   days: request.totalDays,
                   reason: request.reason,
+                  onCancel: request.status.toLowerCase() == 'pending'
+                      ? () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('ยกเลิกคำขอ?'),
+                              content: const Text(
+                                'คุณต้องการยกเลิกคำขอลาใช่หรือไม่?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('ไม่'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'ใช่, ยกเลิก',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true) {
+                            final success = await ref
+                                .read(leaveRequestNotifierProvider.notifier)
+                                .cancelRequest(request.id);
+
+                            if (success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('ยกเลิกคำขอสำเร็จ'),
+                                  backgroundColor: AppTheme.success,
+                                ),
+                              );
+                              ref.invalidate(leaveRequestsProvider(employeeId));
+                            }
+                          }
+                        }
+                      : null,
                 );
               },
             );
@@ -100,6 +143,7 @@ class _RequestCard extends StatelessWidget {
   final DateTime endDate;
   final int days;
   final String reason;
+  final VoidCallback? onCancel;
 
   const _RequestCard({
     required this.type,
@@ -108,6 +152,7 @@ class _RequestCard extends StatelessWidget {
     required this.endDate,
     required this.days,
     required this.reason,
+    this.onCancel,
   });
 
   Color _getStatusColor() {
@@ -250,6 +295,24 @@ class _RequestCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+          if (onCancel != null) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onCancel,
+                icon: const Icon(Icons.delete_outline, size: 16),
+                label: const Text('Cancel Request'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppTheme.danger,
+                  side: BorderSide(
+                    color: AppTheme.danger.withValues(alpha: 0.5),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

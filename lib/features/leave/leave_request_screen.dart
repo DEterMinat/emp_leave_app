@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leave_provider.dart';
@@ -17,6 +19,7 @@ class _LeaveRequestScreenState extends ConsumerState<LeaveRequestScreen> {
   String? _selectedLeaveTypeId;
   DateTime? _startDate;
   DateTime? _endDate;
+  PlatformFile? _selectedFile;
 
   @override
   void dispose() {
@@ -46,6 +49,16 @@ class _LeaveRequestScreenState extends ConsumerState<LeaveRequestScreen> {
     }
   }
 
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+    );
+    if (result != null) {
+      setState(() => _selectedFile = result.files.first);
+    }
+  }
+
   int get _totalDays {
     if (_startDate == null || _endDate == null) return 0;
     return _endDate!.difference(_startDate!).inDays + 1;
@@ -71,6 +84,8 @@ class _LeaveRequestScreenState extends ConsumerState<LeaveRequestScreen> {
           startDate: _startDate!,
           endDate: _endDate!,
           reason: _reasonController.text,
+          file: _selectedFile != null ? File(_selectedFile!.path!) : null,
+          fileName: _selectedFile?.name,
         );
 
     if (success && mounted) {
@@ -257,6 +272,68 @@ class _LeaveRequestScreenState extends ConsumerState<LeaveRequestScreen> {
                         }
                         return null;
                       },
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Attachment Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.gray200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Attachment (Optional)',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    InkWell(
+                      onTap: _pickFile,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppTheme.gray200,
+                            style: BorderStyle.solid,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          color: AppTheme.gray50,
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.attach_file, color: AppTheme.gray500),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _selectedFile != null
+                                    ? _selectedFile!.name
+                                    : 'Choose a file (jpg, png, pdf)...',
+                                style: TextStyle(
+                                  color: _selectedFile != null
+                                      ? Colors.black
+                                      : AppTheme.gray500,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (_selectedFile != null)
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 20),
+                                onPressed: () =>
+                                    setState(() => _selectedFile = null),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

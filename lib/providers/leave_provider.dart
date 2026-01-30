@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../core/api/api_client.dart';
 import '../core/constants/api_constants.dart';
 import '../models/leave.dart';
@@ -66,24 +67,62 @@ class LeaveRequestNotifier extends StateNotifier<LeaveRequestState> {
     required DateTime startDate,
     required DateTime endDate,
     required String reason,
+    dynamic file, // File (io) or XFile (web) or PlatformFile
+    String? fileName,
   }) async {
     state = LeaveRequestState(isLoading: true);
 
     try {
-      await ApiClient().post(
-        ApiConstants.leaveRequests,
-        data: {
-          'employeeId': employeeId,
-          'leaveTypeId': leaveTypeId,
-          'startDate': startDate.toIso8601String(),
-          'endDate': endDate.toIso8601String(),
-          'reason': reason,
-        },
-      );
+      if (file != null) {
+        // Handle Request with Attachment
+        final formData = FormData.fromMap({
+          'EmployeeId': employeeId,
+          'LeaveTypeId': leaveTypeId,
+          'StartDate': startDate.toIso8601String(),
+          'EndDate': endDate.toIso8601String(),
+          'Reason': reason,
+          // Handle file based on type (cross-platform consideration)
+          // For now assuming dart:io File for mobile or standard path
+          'File': await MultipartFile.fromFile(
+            file.path,
+            filename: fileName ?? 'attachment',
+          ),
+        });
+
+        await ApiClient().post(
+          ApiConstants.leaveRequestsWithAttachment,
+          data: formData,
+        );
+      } else {
+        // Standard Request
+        await ApiClient().post(
+          ApiConstants.leaveRequests,
+          data: {
+            'employeeId': employeeId,
+            'leaveTypeId': leaveTypeId,
+            'startDate': startDate.toIso8601String(),
+            'endDate': endDate.toIso8601String(),
+            'reason': reason,
+          },
+        );
+      }
+
       state = LeaveRequestState(isSuccess: true);
       return true;
     } catch (e) {
       state = LeaveRequestState(error: 'Failed to submit: $e');
+      return false;
+    }
+  }
+
+  Future<bool> cancelRequest(String requestId) async {
+    state = LeaveRequestState(isLoading: true);
+    try {
+      await ApiClient().delete('${ApiConstants.leaveRequests}/$requestId');
+      state = LeaveRequestState(isSuccess: true);
+      return true;
+    } catch (e) {
+      state = LeaveRequestState(error: 'Failed to cancel: $e');
       return false;
     }
   }

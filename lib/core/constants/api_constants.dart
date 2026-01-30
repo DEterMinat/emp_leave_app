@@ -19,6 +19,8 @@ class ApiConstants {
   static const String employees = '/employees';
   static const String leaveTypes = '/leavetypes';
   static const String leaveRequests = '/leaverequests';
+  static const String leaveRequestsWithAttachment =
+      '/leaverequests/with-attachment';
   static const String leaveBalances = '/leavebalances';
   static const String departments = '/departments';
   static const String roles = '/roles';
