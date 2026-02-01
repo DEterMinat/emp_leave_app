@@ -18,7 +18,7 @@ class DashboardScreen extends ConsumerWidget {
 
     // Watch leave data
     final requestsAsync = ref.watch(leaveRequestsProvider(employeeId));
-    final balancesAsync = ref.watch(leaveBalancesProvider(employeeId));
+    final balancesAsync = ref.watch(myLeaveBalancesProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.gray50,

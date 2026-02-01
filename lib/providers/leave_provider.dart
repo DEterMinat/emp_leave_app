@@ -22,6 +22,18 @@ final leaveBalancesProvider = FutureProvider.family<List<LeaveBalance>, String>(
   },
 );
 
+// My Leave Balances Provider (authenticated user) - Often called "Entitlements"
+final myLeaveBalancesProvider = FutureProvider<List<LeaveBalance>>((ref) async {
+  try {
+    final response = await ApiClient().get(ApiConstants.myLeaveBalances);
+    final List data = response.data as List;
+    return data.map((json) => LeaveBalance.fromJson(json)).toList();
+  } catch (e) {
+    // Return empty list on error to allow UI to handle it gracefully
+    return [];
+  }
+});
+
 // Leave Requests Provider (by employee)
 final leaveRequestsProvider = FutureProvider.family<List<LeaveRequest>, String>(
   (ref, employeeId) async {
@@ -32,6 +44,23 @@ final leaveRequestsProvider = FutureProvider.family<List<LeaveRequest>, String>(
     return data.map((json) => LeaveRequest.fromJson(json)).toList();
   },
 );
+
+// Leave Request Attachments Provider
+final leaveAttachmentsProvider =
+    FutureProvider.family<List<LeaveAttachment>, String>((
+      ref,
+      requestId,
+    ) async {
+      try {
+        final response = await ApiClient().get(
+          ApiConstants.leaveAttachments(requestId),
+        );
+        final List data = response.data as List;
+        return data.map((json) => LeaveAttachment.fromJson(json)).toList();
+      } catch (e) {
+        return [];
+      }
+    });
 
 // Leave Request State for creating new requests
 class LeaveRequestState {

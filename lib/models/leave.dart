@@ -128,3 +128,31 @@ class LeaveRequest {
     }
   }
 }
+
+class LeaveAttachment {
+  final String id;
+  final String requestId;
+  final String fileName;
+  final String filePath;
+  final DateTime uploadedDate;
+
+  LeaveAttachment({
+    required this.id,
+    required this.requestId,
+    required this.fileName,
+    required this.filePath,
+    required this.uploadedDate,
+  });
+
+  factory LeaveAttachment.fromJson(Map<String, dynamic> json) {
+    return LeaveAttachment(
+      id: json['id'] ?? '',
+      requestId: json['requestId'] ?? '',
+      fileName: json['fileName'] ?? '',
+      filePath: json['filePath'] ?? '',
+      uploadedDate: json['uploadedDate'] != null
+          ? DateTime.parse(json['uploadedDate'])
+          : DateTime.now(),
+    );
+  }
+}

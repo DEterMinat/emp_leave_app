@@ -57,6 +57,7 @@ class LeaveHistoryScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final request = requests[index];
                 return _RequestCard(
+                  requestId: request.id,
                   type: request.leaveTypeName ?? 'Leave',
                   status: request.status,
                   startDate: request.startDate,
@@ -136,7 +137,8 @@ class LeaveHistoryScreen extends ConsumerWidget {
   }
 }
 
-class _RequestCard extends StatelessWidget {
+class _RequestCard extends ConsumerWidget {
+  final String requestId;
   final String type;
   final String status;
   final DateTime startDate;
@@ -146,6 +148,7 @@ class _RequestCard extends StatelessWidget {
   final VoidCallback? onCancel;
 
   const _RequestCard({
+    required this.requestId,
     required this.type,
     required this.status,
     required this.startDate,
@@ -207,7 +210,7 @@ class _RequestCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final dateRange = startDate == endDate
         ? _formatDate(startDate)
         : '${_formatDate(startDate)} - ${_formatDate(endDate)}';
@@ -295,6 +298,72 @@ class _RequestCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
+
+          // Attachments Section
+          const SizedBox(height: 12),
+          ref
+              .watch(leaveAttachmentsProvider(requestId))
+              .when(
+                data: (attachments) {
+                  if (attachments.isEmpty) return const SizedBox();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Divider(),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Attachments',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.gray700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      ...attachments.map(
+                        (a) => InkWell(
+                          onTap: () {
+                            // Open attachment URL (In a real app, use url_launcher)
+                            // For now, show info
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Opening ${a.fileName}...'),
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.attach_file,
+                                  size: 14,
+                                  color: AppTheme.primary,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    a.fileName,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.primary,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox(),
+                error: (_, __) => const SizedBox(),
+              ),
+
           if (onCancel != null) ...[
             const SizedBox(height: 12),
             SizedBox(

@@ -21,9 +21,22 @@ class ApiConstants {
   static const String leaveRequests = '/leaverequests';
   static const String leaveRequestsWithAttachment =
       '/leaverequests/with-attachment';
+  static String leaveAttachments(String id) => '/leaverequests/$id/attachments';
   static const String leaveBalances = '/leavebalances';
+  static const String myLeaveBalances = '/leavebalances/mine';
   static const String departments = '/departments';
   static const String roles = '/roles';
+
+  // Helper to get full URL for static files (uploads)
+  static String getFullUrl(String relativePath) {
+    if (relativePath.startsWith('http')) return relativePath;
+    final rootUrl = baseUrl.replaceFirst('/api', '');
+    // Ensure no double slashes
+    final cleanPath = relativePath.startsWith('/')
+        ? relativePath
+        : '/$relativePath';
+    return '$rootUrl$cleanPath';
+  }
 }
 
 // Storage Keys
