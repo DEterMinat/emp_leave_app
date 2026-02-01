@@ -7,6 +7,9 @@ import '../../providers/leave_provider.dart';
 import '../leave/leave_history_screen.dart';
 import '../leave/leave_request_screen.dart';
 import '../profile/profile_screen.dart';
+import '../admin/manage_requests_screen.dart';
+import '../admin/employee_list_screen.dart';
+import '../admin/team_management_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,6 +18,7 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final employeeId = authState.userId ?? '';
+    final roleName = authState.roleName?.toLowerCase() ?? 'employee';
 
     // Watch leave data
     final requestsAsync = ref.watch(leaveRequestsProvider(employeeId));
@@ -82,33 +86,34 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  // New Request Button
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LeaveRequestScreen(),
+                  // New Request Button (Only for Employee/Managers)
+                  if (roleName != 'hr')
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LeaveRequestScreen(),
+                          ),
+                        );
+                        // Refresh data after returning
+                        ref.invalidate(leaveRequestsProvider(employeeId));
+                        ref.invalidate(myLeaveBalancesProvider);
+                      },
+                      icon: const Icon(Icons.add_circle_outline, size: 20),
+                      label: const Text('New Request'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
-                      );
-                      // Refresh data after returning
-                      ref.invalidate(leaveRequestsProvider(employeeId));
-                      ref.invalidate(leaveBalancesProvider(employeeId));
-                    },
-                    icon: const Icon(Icons.add_circle_outline, size: 20),
-                    label: const Text('New Request'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -118,7 +123,10 @@ class DashboardScreen extends ConsumerWidget {
               child: RefreshIndicator(
                 onRefresh: () async {
                   ref.invalidate(leaveRequestsProvider(employeeId));
-                  ref.invalidate(leaveBalancesProvider(employeeId));
+                  ref.invalidate(myLeaveBalancesProvider);
+                  if (roleName == 'hr' || roleName == 'manager') {
+                    ref.invalidate(allLeaveRequestsProvider);
+                  }
                 },
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -126,7 +134,14 @@ class DashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Stats Cards
+                      // Role-specific Header
+                      if (roleName == 'hr' || roleName == 'manager')
+                        _AdminQuickActions(roleName: roleName),
+
+                      if (roleName == 'hr' || roleName == 'manager')
+                        const SizedBox(height: 24),
+
+                      // Stats Cards (Personal for Employee, Company for HR/Admin)
                       requestsAsync.when(
                         data: (requests) {
                           final stats = DashboardStats.fromRequests(requests);
@@ -175,61 +190,63 @@ class DashboardScreen extends ConsumerWidget {
 
                       const SizedBox(height: 24),
 
-                      // Leave Balance Section
-                      const Text(
-                        'Leave Balance',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.gray800,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-
-                      balancesAsync.when(
-                        data: (balances) {
-                          if (balances.isEmpty) {
-                            return _EmptyCard(message: 'No balance data');
-                          }
-                          return Wrap(
-                            spacing: 12,
-                            runSpacing: 12,
-                            children: balances.map((balance) {
-                              return SizedBox(
-                                width:
-                                    (MediaQuery.of(context).size.width - 44) /
-                                    3,
-                                child: _LeaveBalanceCard(
-                                  title: balance.leaveTypeName ?? 'Leave',
-                                  remaining: balance.remainingDays,
-                                  total: balance.totalDays,
-                                  progressColor: _getColorForType(
-                                    balance.leaveTypeName,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        },
-                        loading: () => const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: CircularProgressIndicator(),
+                      // Leave Balance Section (Only for personal view)
+                      if (roleName != 'hr') ...[
+                        const Text(
+                          'Leave Balance',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.gray800,
                           ),
                         ),
-                        error: (err, _) =>
-                            _ErrorCard(message: 'Failed to load balances'),
-                      ),
-
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 12),
+                        balancesAsync.when(
+                          data: (balances) {
+                            if (balances.isEmpty) {
+                              return _EmptyCard(message: 'No balance data');
+                            }
+                            return Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: balances.map((balance) {
+                                return SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width - 44) /
+                                      3,
+                                  child: _LeaveBalanceCard(
+                                    title: balance.leaveTypeName ?? 'Leave',
+                                    remaining: balance.remainingDays,
+                                    total: balance.totalDays,
+                                    progressColor: _getColorForType(
+                                      balance.leaveTypeName,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            );
+                          },
+                          loading: () => const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          error: (err, _) =>
+                              _ErrorCard(message: 'Failed to load balances'),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
 
                       // Recent Requests Section
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Recent Request',
-                            style: TextStyle(
+                          Text(
+                            roleName == 'hr'
+                                ? 'All Requests'
+                                : 'Recent Request',
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppTheme.gray800,
@@ -302,18 +319,58 @@ class DashboardScreen extends ConsumerWidget {
                     isActive: true,
                     onTap: () {},
                   ),
-                  _NavItem(
-                    icon: Icons.description_outlined,
-                    label: 'My Request',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const LeaveHistoryScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                  if (roleName == 'hr' || roleName == 'manager')
+                    _NavItem(
+                      icon: Icons.rule,
+                      label: 'Approvals',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ManageRequestsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  if (roleName == 'hr')
+                    _NavItem(
+                      icon: Icons.people_outline,
+                      label: 'Employees',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const EmployeeListScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  if (roleName == 'manager')
+                    _NavItem(
+                      icon: Icons.groups_outlined,
+                      label: 'My Team',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TeamManagementScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  if (roleName == 'employee')
+                    _NavItem(
+                      icon: Icons.description_outlined,
+                      label: 'My Request',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const LeaveHistoryScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   _NavItem(
                     icon: Icons.person_outline,
                     label: 'Profile',
@@ -363,6 +420,139 @@ class DashboardScreen extends ConsumerWidget {
       return '${months[start.month - 1]} ${start.day}, ${start.year}';
     }
     return '${months[start.month - 1]} ${start.day} - ${months[end.month - 1]} ${end.day}, ${end.year}';
+  }
+}
+
+class _AdminQuickActions extends StatelessWidget {
+  final String roleName;
+  const _AdminQuickActions({required this.roleName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Admin Actions',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppTheme.gray800,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            if (roleName == 'hr' || roleName == 'manager')
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Manage Requests',
+                  subtitle: 'Approve or Reject',
+                  icon: Icons.rule,
+                  color: AppTheme.primary,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ManageRequestsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            if (roleName == 'hr') ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Manage Employees',
+                  subtitle: 'Staff Directory',
+                  icon: Icons.people_outline,
+                  color: AppTheme.success,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmployeeListScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+            if (roleName == 'manager') ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'My Team',
+                  subtitle: 'Team Overview',
+                  icon: Icons.groups_outlined,
+                  color: AppTheme.purple,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeamManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _QuickActionCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppTheme.gray800,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 12, color: AppTheme.gray500),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

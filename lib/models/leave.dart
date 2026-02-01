@@ -63,6 +63,7 @@ class LeaveRequest {
   final String? approverId;
   final DateTime? approvedDate;
   final String? employeeName;
+  final String? username;
   final String? leaveTypeName;
 
   LeaveRequest({
@@ -79,6 +80,7 @@ class LeaveRequest {
     this.approverId,
     this.approvedDate,
     this.employeeName,
+    this.username,
     this.leaveTypeName,
   });
 
@@ -101,6 +103,7 @@ class LeaveRequest {
           ? DateTime.parse(json['approvedDate'])
           : null,
       employeeName: json['employeeName'],
+      username: json['username'],
       leaveTypeName: json['leaveTypeName'],
     );
   }

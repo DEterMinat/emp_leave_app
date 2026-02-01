@@ -57,8 +57,11 @@ class ApiClient {
   }
 
   // GET request
-  Future<Response> get(String path, {Map<String, dynamic>? queryParams}) async {
-    return await _dio.get(path, queryParameters: queryParams);
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    return await _dio.get(path, queryParameters: queryParameters);
   }
 
   // POST request
@@ -69,6 +72,11 @@ class ApiClient {
   // PUT request
   Future<Response> put(String path, {dynamic data}) async {
     return await _dio.put(path, data: data);
+  }
+
+  // PATCH request
+  Future<Response> patch(String path, {dynamic data}) async {
+    return await _dio.patch(path, data: data);
   }
 
   // DELETE request

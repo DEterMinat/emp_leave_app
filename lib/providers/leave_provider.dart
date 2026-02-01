@@ -45,6 +45,15 @@ final leaveRequestsProvider = FutureProvider.family<List<LeaveRequest>, String>(
   },
 );
 
+// All Leave Requests Provider (for HR/Managers)
+final allLeaveRequestsProvider = FutureProvider<List<LeaveRequest>>((
+  ref,
+) async {
+  final response = await ApiClient().get(ApiConstants.leaveRequests);
+  final List data = response.data as List;
+  return data.map((json) => LeaveRequest.fromJson(json)).toList();
+});
+
 // Leave Request Attachments Provider
 final leaveAttachmentsProvider =
     FutureProvider.family<List<LeaveAttachment>, String>((
@@ -152,6 +161,21 @@ class LeaveRequestNotifier extends StateNotifier<LeaveRequestState> {
       return true;
     } catch (e) {
       state = LeaveRequestState(error: 'Failed to cancel: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateRequestStatus(String requestId, String status) async {
+    state = LeaveRequestState(isLoading: true);
+    try {
+      await ApiClient().patch(
+        '${ApiConstants.leaveRequests}/$requestId/status',
+        data: {'status': status},
+      );
+      state = LeaveRequestState(isSuccess: true);
+      return true;
+    } catch (e) {
+      state = LeaveRequestState(error: 'Failed to update status: $e');
       return false;
     }
   }
