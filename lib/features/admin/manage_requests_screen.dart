@@ -101,7 +101,7 @@ class _RequestList extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      req.username ?? 'Employee',
+                      req.employeeName ?? 'Employee',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -111,10 +111,33 @@ class _RequestList extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text('${req.leaveTypeName} • ${req.totalDays} Days'),
-                Text(
-                  '${_formatDate(req.startDate)} - ${_formatDate(req.endDate)}',
-                  style: TextStyle(color: AppTheme.gray600, fontSize: 13),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('${req.leaveTypeName} • ${req.totalDays} Days'),
+                          Text(
+                            '${_formatDate(req.startDate)} - ${_formatDate(req.endDate)}',
+                            style: TextStyle(
+                              color: AppTheme.gray600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (req.hasAttachments)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.attach_file,
+                          color: AppTheme.primary,
+                        ),
+                        onPressed: () => _showAttachments(context, ref, req.id),
+                        tooltip: 'View Attachments',
+                      ),
+                  ],
                 ),
                 if (req.reason.isNotEmpty) ...[
                   const SizedBox(height: 8),
@@ -174,15 +197,125 @@ class _RequestList extends ConsumerWidget {
     String requestId,
     String status,
   ) async {
+    final commentController = TextEditingController();
+
+    // Show confirmation dialog with comment field
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          status == 'Approved' ? 'Approve Request' : 'Reject Request',
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Are you sure you want to ${status.toLowerCase()} this request?',
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: commentController,
+              decoration: const InputDecoration(
+                labelText: 'Comment (Optional)',
+                border: OutlineInputBorder(),
+                hintText: 'Add a note for the employee...',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false), // Cancel
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true), // Confirm
+            style: ElevatedButton.styleFrom(
+              backgroundColor: status == 'Approved'
+                  ? AppTheme.success
+                  : AppTheme.danger,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(status == 'Approved' ? 'Approve' : 'Reject'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
     final success = await ref
         .read(leaveRequestNotifierProvider.notifier)
-        .updateRequestStatus(requestId, status);
+        .updateRequestStatus(
+          requestId,
+          status,
+          comment: commentController.text.trim().isEmpty
+              ? null
+              : commentController.text.trim(),
+        );
+
     if (success && context.mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Request $status successfully')));
       ref.invalidate(allLeaveRequestsProvider);
     }
+  }
+
+  void _showAttachments(
+    BuildContext context,
+    WidgetRef ref,
+    String requestId,
+  ) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Attachments'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ref
+              .watch(leaveAttachmentsProvider(requestId))
+              .when(
+                data: (attachments) {
+                  if (attachments.isEmpty) {
+                    return const Text('No attachments found');
+                  }
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: attachments.length,
+                    itemBuilder: (context, index) {
+                      final att = attachments[index];
+                      return ListTile(
+                        leading: const Icon(Icons.file_present),
+                        title: Text(att.fileName),
+                        subtitle: Text(
+                          'Uploaded: ${_formatDate(att.uploadedDate)}',
+                        ),
+                        trailing: const Icon(Icons.open_in_new),
+                        onTap: () {
+                          // In a real app, use url_launcher to open att.filePath
+                          // For now, we show a snackbar with the path
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Opening: ${att.filePath}')),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Text('Error: $e'),
+              ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

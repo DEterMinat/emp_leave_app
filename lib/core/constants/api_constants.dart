@@ -1,9 +1,16 @@
 // API Configuration
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   // Auto-detect platform for correct URL
   static String get baseUrl {
+    final envUrl = dotenv.env['API_BASE_URL'];
+    if (envUrl != null && envUrl.isNotEmpty) {
+      return envUrl;
+    }
+
     if (kIsWeb) {
       return 'http://localhost:5082/api'; // Flutter Web
     } else {
@@ -26,6 +33,7 @@ class ApiConstants {
   static const String myLeaveBalances = '/leavebalances/mine';
   static const String departments = '/departments';
   static const String roles = '/roles';
+  static const String activityLogs = '/activitylogs';
 
   // Helper to get full URL for static files (uploads)
   static String getFullUrl(String relativePath) {

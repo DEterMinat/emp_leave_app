@@ -65,6 +65,7 @@ class LeaveRequest {
   final String? employeeName;
   final String? username;
   final String? leaveTypeName;
+  final bool hasAttachments;
 
   LeaveRequest({
     required this.id,
@@ -82,6 +83,7 @@ class LeaveRequest {
     this.employeeName,
     this.username,
     this.leaveTypeName,
+    this.hasAttachments = false,
   });
 
   factory LeaveRequest.fromJson(Map<String, dynamic> json) {
@@ -105,6 +107,7 @@ class LeaveRequest {
       employeeName: json['employeeName'],
       username: json['username'],
       leaveTypeName: json['leaveTypeName'],
+      hasAttachments: json['hasAttachments'] ?? false,
     );
   }
 

@@ -4,6 +4,8 @@ import '../core/api/api_client.dart';
 import '../core/constants/api_constants.dart';
 import '../models/leave.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 // Leave Types Provider
 final leaveTypesProvider = FutureProvider<List<LeaveType>>((ref) async {
   final response = await ApiClient().get(ApiConstants.leaveTypes);
@@ -165,12 +167,27 @@ class LeaveRequestNotifier extends StateNotifier<LeaveRequestState> {
     }
   }
 
-  Future<bool> updateRequestStatus(String requestId, String status) async {
+  Future<bool> updateRequestStatus(
+    String requestId,
+    String status, {
+    String? comment,
+  }) async {
     state = LeaveRequestState(isLoading: true);
     try {
-      await ApiClient().patch(
-        '${ApiConstants.leaveRequests}/$requestId/status',
-        data: {'status': status},
+      final endpoint = status.toLowerCase() == 'approved'
+          ? '${ApiConstants.leaveRequests}/$requestId/approve'
+          : '${ApiConstants.leaveRequests}/$requestId/reject';
+
+      final prefs = await SharedPreferences.getInstance();
+      final approverId = prefs.getString(StorageKeys.userId);
+
+      await ApiClient().put(
+        endpoint,
+        data: {
+          'status': status,
+          'comment': comment ?? 'Processed via Mobile App',
+          'approverId': approverId,
+        },
       );
       state = LeaveRequestState(isSuccess: true);
       return true;

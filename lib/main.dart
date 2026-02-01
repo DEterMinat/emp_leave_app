@@ -11,8 +11,19 @@ import 'features/auth/login_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'providers/notification_provider.dart';
 
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'features/notification/notification_screen.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load env
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('Error loading .env file: $e');
+  }
 
   // Initialize API client
   await ApiClient().init();
@@ -45,35 +56,7 @@ class _EmployeeLeaveAppState extends ConsumerState<EmployeeLeaveApp> {
     // Check for existing auth
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authProvider.notifier).checkAuth();
-      _setupNotificationListener();
     });
-  }
-
-  void _setupNotificationListener() {
-    ref
-        .read(notificationServiceProvider)
-        .onNotificationReceived = (title, message) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(message),
-              ],
-            ),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.blueAccent,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
-    };
   }
 
   @override
@@ -116,6 +99,44 @@ class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for new notifications to show SnackBar
+    ref.listen<List<NotificationItem>>(notificationListProvider, (
+      previous,
+      next,
+    ) {
+      if (previous != null && next.length > previous.length) {
+        final newNotification = next.first; // Assumes new items added to start
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  newNotification.title,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                Text(newNotification.message),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.blueAccent,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'VIEW',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotificationScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      }
+    });
+
     return const DashboardScreen();
   }
 }

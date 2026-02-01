@@ -12,9 +12,9 @@ class NotificationService extends ChangeNotifier {
 
   Future<void> initSignalR() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    final userId = prefs.getString('userId');
-    final role = prefs.getString('userRole');
+    final token = prefs.getString(StorageKeys.token);
+    final userId = prefs.getString(StorageKeys.userId);
+    final role = prefs.getString(StorageKeys.roleName);
 
     if (token == null || userId == null) return;
 

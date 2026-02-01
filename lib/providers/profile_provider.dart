@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/api/api_client.dart';
 import '../core/constants/api_constants.dart';
@@ -61,14 +62,73 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     }
   }
 
+  Future<bool> createProfile(
+    String firstName,
+    String lastName,
+    String email,
+    String phone,
+    String address,
+    String departmentId,
+  ) async {
+    if (_userId == null) return false;
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _apiClient.post(
+        ApiConstants.employees,
+        data: {
+          'userId': _userId,
+          'firstName': firstName,
+          'lastName': lastName,
+          'email': email,
+          'phone': phone,
+          'address': address,
+          'departmentId': departmentId,
+        },
+      );
+
+      final newEmployee = Employee.fromJson(response.data);
+      // 2. Initialize Leave Balances for the new employee
+      try {
+        await _apiClient.post(
+          '${ApiConstants.leaveBalances}/initialize/${_userId}?year=${DateTime.now().year}',
+        );
+      } catch (e) {
+        debugPrint('Failed to initialize balances: $e');
+        // Non-critical error, continue
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        employee: newEmployee,
+        isSuccess: true,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'Failed to create: $e');
+      return false;
+    }
+  }
+
   Future<bool> updateProfile(
     String firstName,
     String lastName,
     String email,
     String phone,
     String address,
+    String departmentId,
   ) async {
-    if (state.employee == null) return false;
+    // If no employee record exists, create one instead
+    if (state.employee == null) {
+      return createProfile(
+        firstName,
+        lastName,
+        email,
+        phone,
+        address,
+        departmentId,
+      );
+    }
 
     state = state.copyWith(isLoading: true, error: null);
     try {
@@ -80,8 +140,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
           'email': email,
           'phone': phone,
           'address': address,
-          // DepartmentId required by DTO? If so, pass existing.
-          'departmentId': state.employee!.departmentId,
+          'departmentId': departmentId,
         },
       );
 

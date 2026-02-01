@@ -10,6 +10,13 @@ import '../profile/profile_screen.dart';
 import '../admin/manage_requests_screen.dart';
 import '../admin/employee_list_screen.dart';
 import '../admin/team_management_screen.dart';
+import '../admin/statistics_screen.dart';
+import '../notification/notification_screen.dart';
+import '../admin/user_management_screen.dart';
+import '../admin/department_management_screen.dart';
+import '../admin/leave_type_management_screen.dart';
+import '../admin/activity_logs_screen.dart';
+import '../../providers/notification_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -23,6 +30,7 @@ class DashboardScreen extends ConsumerWidget {
     // Watch leave data
     final requestsAsync = ref.watch(leaveRequestsProvider(employeeId));
     final balancesAsync = ref.watch(myLeaveBalancesProvider);
+    final allRequestsAsync = ref.watch(allLeaveRequestsProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.gray50,
@@ -101,19 +109,73 @@ class DashboardScreen extends ConsumerWidget {
                         ref.invalidate(myLeaveBalancesProvider);
                       },
                       icon: const Icon(Icons.add_circle_outline, size: 20),
-                      label: const Text('New Request'),
+                      label: const Text('New'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                          horizontal: 12,
+                          vertical: 8,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
+
+                  // Notification Bell
+                  const SizedBox(width: 8),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final notifications = ref.watch(notificationListProvider);
+                      final unreadCount = notifications
+                          .where((n) => !n.isRead)
+                          .length;
+
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.notifications_outlined),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const NotificationScreen(),
+                                ),
+                              );
+                            },
+                            color: AppTheme.gray600,
+                          ),
+                          if (unreadCount > 0)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppTheme.danger,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  '$unreadCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -135,11 +197,56 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Role-specific Header
-                      if (roleName == 'hr' || roleName == 'manager')
+                      if (roleName == 'hr' ||
+                          roleName == 'manager' ||
+                          roleName == 'admin')
                         _AdminQuickActions(roleName: roleName),
 
-                      if (roleName == 'hr' || roleName == 'manager')
+                      if (roleName == 'hr' ||
+                          roleName == 'manager' ||
+                          roleName == 'admin')
                         const SizedBox(height: 24),
+
+                      // Team Stats (Only for Managers/HR/Admin)
+                      if (roleName == 'hr' ||
+                          roleName == 'manager' ||
+                          roleName == 'admin') ...[
+                        Text(
+                          'Team Leave Overview',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.gray800,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        allRequestsAsync.when(
+                          data: (requests) {
+                            final stats = DashboardStats.fromRequests(requests);
+                            return _TeamStatsRow(stats: stats);
+                          },
+                          loading: () => const LinearProgressIndicator(),
+                          error: (e, _) => Text('Error loading team stats: $e'),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+
+                      // Personal Stats Header
+                      if (roleName == 'hr' ||
+                          roleName == 'manager' ||
+                          roleName == 'admin')
+                        Text(
+                          'My Leave Status',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.gray800,
+                          ),
+                        ),
+                      if (roleName == 'hr' ||
+                          roleName == 'manager' ||
+                          roleName == 'admin')
+                        const SizedBox(height: 12),
 
                       // Stats Cards (Personal for Employee, Company for HR/Admin)
                       requestsAsync.when(
@@ -283,6 +390,7 @@ class DashboardScreen extends ConsumerWidget {
                                 child: _RequestCard(
                                   type: req.leaveTypeName ?? 'Leave',
                                   status: req.status,
+                                  employeeName: req.employeeName, // Pass name
                                   dateRange: _formatDateRange(
                                     req.startDate,
                                     req.endDate,
@@ -358,19 +466,31 @@ class DashboardScreen extends ConsumerWidget {
                         );
                       },
                     ),
-                  if (roleName == 'employee')
+                  if (roleName == 'admin')
                     _NavItem(
-                      icon: Icons.description_outlined,
-                      label: 'My Request',
+                      icon: Icons.manage_accounts,
+                      label: 'Users',
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const LeaveHistoryScreen(),
+                            builder: (_) => const UserManagementScreen(),
                           ),
                         );
                       },
                     ),
+                  _NavItem(
+                    icon: Icons.description_outlined,
+                    label: 'My Request',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const LeaveHistoryScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _NavItem(
                     icon: Icons.person_outline,
                     label: 'Profile',
@@ -433,7 +553,7 @@ class _AdminQuickActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Admin Actions',
+          'Management Actions',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -441,9 +561,12 @@ class _AdminQuickActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        // Row 1: Primary Actions
         Row(
           children: [
-            if (roleName == 'hr' || roleName == 'manager')
+            if (roleName == 'hr' ||
+                roleName == 'manager' ||
+                roleName == 'admin')
               Expanded(
                 child: _QuickActionCard(
                   title: 'Manage Requests',
@@ -460,11 +583,11 @@ class _AdminQuickActions extends StatelessWidget {
                   },
                 ),
               ),
-            if (roleName == 'hr') ...[
+            if (roleName == 'hr' || roleName == 'admin') ...[
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionCard(
-                  title: 'Manage Employees',
+                  title: 'Employees',
                   subtitle: 'Staff Directory',
                   icon: Icons.people_outline,
                   color: AppTheme.success,
@@ -478,8 +601,7 @@ class _AdminQuickActions extends StatelessWidget {
                   },
                 ),
               ),
-            ],
-            if (roleName == 'manager') ...[
+            ] else if (roleName == 'manager') ...[
               const SizedBox(width: 12),
               Expanded(
                 child: _QuickActionCard(
@@ -500,6 +622,112 @@ class _AdminQuickActions extends StatelessWidget {
             ],
           ],
         ),
+
+        // Add additional rows for Admin
+        if (roleName == 'admin') ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'User Management',
+                  subtitle: 'Login & Roles',
+                  icon: Icons.manage_accounts,
+                  color: AppTheme.danger,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UserManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Dept Mgmt',
+                  subtitle: 'Organization',
+                  icon: Icons.business_outlined,
+                  color: AppTheme.purple,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const DepartmentManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Leave Types',
+                  subtitle: 'Policy Mgmt',
+                  icon: Icons.event_note_outlined,
+                  color: AppTheme.warning,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const LeaveTypeManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Activity Logs',
+                  subtitle: 'System Audit',
+                  icon: Icons.history_outlined,
+                  color: Colors.blueGrey,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ActivityLogsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+
+        // Manager specific second row
+        if (roleName == 'manager') ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _QuickActionCard(
+                  title: 'Statistics',
+                  subtitle: 'Leave Analysis',
+                  icon: Icons.bar_chart,
+                  color: Colors.orange,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StatisticsScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const Expanded(child: SizedBox()),
+            ],
+          ),
+        ],
       ],
     );
   }
@@ -551,6 +779,101 @@ class _QuickActionCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TeamStatsRow extends StatelessWidget {
+  final DashboardStats stats;
+
+  const _TeamStatsRow({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _TeamStatItem(
+                label: 'Pending Approval',
+                value: '${stats.pendingRequests}',
+                color: AppTheme.warning,
+                icon: Icons.pending_actions,
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: AppTheme.gray200,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              _TeamStatItem(
+                label: 'Employees Off',
+                value:
+                    '${stats.totalRequests - stats.pendingRequests}', // This is a simplification
+                color: AppTheme.success,
+                icon: Icons.groups_outlined,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TeamStatItem extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _TeamStatItem({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.gray800,
+                ),
+              ),
+              Text(
+                label,
+                style: TextStyle(fontSize: 12, color: AppTheme.gray500),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -671,12 +994,14 @@ class _RequestCard extends StatelessWidget {
   final String status;
   final String dateRange;
   final String reason;
+  final String? employeeName;
 
   const _RequestCard({
     required this.type,
     required this.status,
     required this.dateRange,
     required this.reason,
+    this.employeeName,
   });
 
   Color _getStatusColor() {
@@ -716,12 +1041,21 @@ class _RequestCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                type,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    employeeName ?? 'Employee',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    type,
+                    style: TextStyle(fontSize: 12, color: AppTheme.gray500),
+                  ),
+                ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(

@@ -5,6 +5,13 @@ class User {
   final String? roleName;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final String? email;
+  final String? phone;
+  final int? annualLeaveQuota;
+  final String? firstName;
+  final String? lastName;
+  final String? departmentId;
+  final String? departmentName;
 
   User({
     required this.id,
@@ -13,6 +20,13 @@ class User {
     this.roleName,
     this.createdAt,
     this.updatedAt,
+    this.email,
+    this.phone,
+    this.annualLeaveQuota,
+    this.firstName,
+    this.lastName,
+    this.departmentId,
+    this.departmentName,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -27,6 +41,13 @@ class User {
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'])
           : null,
+      email: json['email'],
+      phone: json['phone'],
+      annualLeaveQuota: json['annualLeaveQuota'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      departmentId: json['departmentId'],
+      departmentName: json['departmentName'],
     );
   }
 
@@ -36,6 +57,13 @@ class User {
       'username': username,
       'roleId': roleId,
       'roleName': roleName,
+      'email': email,
+      'phone': phone,
+      'annualLeaveQuota': annualLeaveQuota,
+      'firstName': firstName,
+      'lastName': lastName,
+      'departmentId': departmentId,
+      'departmentName': departmentName,
     };
   }
 }

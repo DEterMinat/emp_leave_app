@@ -4,6 +4,7 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../auth/login_screen.dart';
+import '../../providers/user_management_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -19,6 +20,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
   late TextEditingController _addressController;
+  String? _selectedDepartmentId;
   bool _isEditing = false;
 
   @override
@@ -49,6 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _emailController.text = state.employee!.email;
       _phoneController.text = state.employee!.phone ?? '';
       _addressController.text = state.employee!.address ?? '';
+      _selectedDepartmentId = state.employee!.departmentId;
     }
   }
 
@@ -63,6 +66,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           _emailController.text,
           _phoneController.text,
           _addressController.text,
+          _selectedDepartmentId ?? '',
         );
 
     if (success && mounted) {
@@ -93,17 +97,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         title: const Text('My Profile'),
         backgroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: Icon(_isEditing ? Icons.close : Icons.edit),
-            onPressed: () {
-              setState(() {
-                _isEditing = !_isEditing;
-                if (_isEditing) {
-                  _populateControllers(); // Reset to current data on edit start
-                }
-              });
-            },
-          ),
+          if (profileState.employee != null)
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  if (_isEditing) {
+                    _populateControllers(); // Reset on cancel
+                  }
+                  _isEditing = !_isEditing;
+                });
+              },
+              child: Text(_isEditing ? 'Cancel' : 'Edit'),
+            ),
         ],
       ),
       body: profileState.isLoading && profileState.employee == null
@@ -139,7 +144,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '${profileState.employee?.firstName} ${profileState.employee?.lastName}',
+                          profileState.employee != null
+                              ? '${profileState.employee!.firstName} ${profileState.employee!.lastName}'
+                              : (ref.watch(authProvider).username ?? 'User'),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -147,13 +154,49 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ),
                         ),
                         Text(
-                          profileState.employee?.departmentName ?? 'Employee',
+                          profileState.employee?.departmentName ??
+                              (ref.watch(authProvider).roleName ?? 'Admin'),
                           style: TextStyle(color: AppTheme.gray500),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  if (profileState.employee == null && !profileState.isLoading)
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.warning.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.warning.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            color: AppTheme.warning,
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Please complete your profile information to use all features.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppTheme.gray700,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => setState(() => _isEditing = true),
+                            child: const Text('Complete Now'),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   // Profile Form
                   Form(
@@ -213,6 +256,76 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             icon: Icons.location_on_outlined,
                             maxLines: 3,
                           ),
+                          const SizedBox(height: 16),
+                          // Department Dropdown
+                          ref
+                              .watch(allDepartmentsProvider)
+                              .when(
+                                data: (depts) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Department',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppTheme.gray500,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    DropdownButtonFormField<String>(
+                                      value: _selectedDepartmentId,
+                                      decoration: InputDecoration(
+                                        prefixIcon: Icon(
+                                          Icons.business_outlined,
+                                          size: 20,
+                                          color: _isEditing
+                                              ? AppTheme.primary
+                                              : AppTheme.gray400,
+                                        ),
+                                        filled: true,
+                                        fillColor: _isEditing
+                                            ? Colors.white
+                                            : AppTheme.gray50,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 12,
+                                            ),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: AppTheme.gray200,
+                                          ),
+                                        ),
+                                      ),
+                                      items: depts.map((d) {
+                                        return DropdownMenuItem<String>(
+                                          value: d['id'],
+                                          child: Text(d['departmentName']),
+                                        );
+                                      }).toList(),
+                                      onChanged: _isEditing
+                                          ? (val) {
+                                              setState(() {
+                                                _selectedDepartmentId = val;
+                                              });
+                                            }
+                                          : null,
+                                      validator: (value) => value == null
+                                          ? 'Please select department'
+                                          : null,
+                                    ),
+                                  ],
+                                ),
+                                loading: () => const SizedBox(
+                                  height: 2,
+                                  child: LinearProgressIndicator(),
+                                ),
+                                error: (e, _) => Text('Error: $e'),
+                              ),
                         ],
                       ),
                     ),
@@ -259,14 +372,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        await ref.read(authProvider.notifier).logout();
-                        if (context.mounted) {
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Logout'),
+                            content: const Text(
+                              'Are you sure you want to logout?',
                             ),
-                            (route) => false,
-                          );
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.danger,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('Logout'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          await ref.read(authProvider.notifier).logout();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginScreen(),
+                              ),
+                              (route) => false,
+                            );
+                          }
                         }
                       },
                       icon: const Icon(Icons.logout),
