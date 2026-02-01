@@ -812,7 +812,7 @@ class _TeamStatsRow extends StatelessWidget {
                 width: 1,
                 height: 40,
                 color: AppTheme.gray200,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: const EdgeInsets.symmetric(horizontal: 12),
               ),
               _TeamStatItem(
                 label: 'Employees Off',
@@ -846,32 +846,38 @@ class _TeamStatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(icon, color: color, size: 18),
           ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.gray800,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.gray800,
+                  ),
                 ),
-              ),
-              Text(
-                label,
-                style: TextStyle(fontSize: 12, color: AppTheme.gray500),
-              ),
-            ],
+                Text(
+                  label,
+                  style: TextStyle(fontSize: 10, color: AppTheme.gray500),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
