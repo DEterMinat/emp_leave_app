@@ -261,65 +261,76 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           ref
                               .watch(allDepartmentsProvider)
                               .when(
-                                data: (depts) => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Department',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: AppTheme.gray500,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    DropdownButtonFormField<String>(
-                                      value: _selectedDepartmentId,
-                                      decoration: InputDecoration(
-                                        prefixIcon: Icon(
-                                          Icons.business_outlined,
-                                          size: 20,
-                                          color: _isEditing
-                                              ? AppTheme.primary
-                                              : AppTheme.gray400,
+                                data: (depts) {
+                                  final validValue =
+                                      depts.any(
+                                        (d) => d['id'] == _selectedDepartmentId,
+                                      )
+                                      ? _selectedDepartmentId
+                                      : null;
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Department',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppTheme.gray500,
+                                          fontWeight: FontWeight.w500,
                                         ),
-                                        filled: true,
-                                        fillColor: _isEditing
-                                            ? Colors.white
-                                            : AppTheme.gray50,
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 12,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      DropdownButtonFormField<String>(
+                                        key: ValueKey('dept_$validValue'),
+                                        initialValue: validValue,
+                                        decoration: InputDecoration(
+                                          prefixIcon: Icon(
+                                            Icons.business_outlined,
+                                            size: 20,
+                                            color: _isEditing
+                                                ? AppTheme.primary
+                                                : AppTheme.gray400,
+                                          ),
+                                          filled: true,
+                                          fillColor: _isEditing
+                                              ? Colors.white
+                                              : AppTheme.gray50,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 16,
+                                                vertical: 12,
+                                              ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          borderSide: BorderSide(
-                                            color: AppTheme.gray200,
+                                            borderSide: BorderSide(
+                                              color: AppTheme.gray200,
+                                            ),
                                           ),
                                         ),
+                                        items: depts.map((d) {
+                                          return DropdownMenuItem<String>(
+                                            value: d['id'],
+                                            child: Text(d['departmentName']),
+                                          );
+                                        }).toList(),
+                                        onChanged: _isEditing
+                                            ? (val) {
+                                                setState(() {
+                                                  _selectedDepartmentId = val;
+                                                });
+                                              }
+                                            : null,
+                                        validator: (value) => value == null
+                                            ? 'Please select department'
+                                            : null,
                                       ),
-                                      items: depts.map((d) {
-                                        return DropdownMenuItem<String>(
-                                          value: d['id'],
-                                          child: Text(d['departmentName']),
-                                        );
-                                      }).toList(),
-                                      onChanged: _isEditing
-                                          ? (val) {
-                                              setState(() {
-                                                _selectedDepartmentId = val;
-                                              });
-                                            }
-                                          : null,
-                                      validator: (value) => value == null
-                                          ? 'Please select department'
-                                          : null,
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  );
+                                },
                                 loading: () => const SizedBox(
                                   height: 2,
                                   child: LinearProgressIndicator(),

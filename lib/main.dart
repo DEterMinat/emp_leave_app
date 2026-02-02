@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/api/api_client.dart';
-import 'core/services/fcm_service.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'providers/auth_provider.dart';
 import 'features/auth/login_screen.dart';
@@ -29,6 +26,7 @@ void main() async {
   await ApiClient().init();
 
   // Initialize Firebase (Requires google-services.json for Android/iOS)
+  /*
   try {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(FCMService.onBackgroundMessage);
@@ -38,6 +36,7 @@ void main() async {
       '⚠️ Firebase not initialized: $e (This is expected if config files are missing)',
     );
   }
+  */
 
   runApp(const ProviderScope(child: EmployeeLeaveApp()));
 }
@@ -90,10 +89,12 @@ class _AuthenticatedAppState extends ConsumerState<_AuthenticatedApp> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(notificationServiceProvider).initSignalR();
       // Register FCM Token
+      /*
       final userId = ref.read(authProvider).userId;
       if (userId != null) {
         FCMService().registerToken(userId);
       }
+      */
     });
   }
 

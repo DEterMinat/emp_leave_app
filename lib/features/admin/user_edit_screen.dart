@@ -139,43 +139,61 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
                     ),
                     const SizedBox(height: 16),
                     rolesAsync.when(
-                      data: (roles) => DropdownButtonFormField<String>(
-                        value: _selectedRoleId,
-                        decoration: const InputDecoration(
-                          labelText: 'Role',
-                          prefixIcon: Icon(Icons.admin_panel_settings),
-                        ),
-                        items: roles.map((r) {
-                          return DropdownMenuItem(
-                            value: r['id'] as String,
-                            child: Text(r['roleName'] as String),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedRoleId = val),
-                        validator: (val) => val == null ? 'Required' : null,
-                      ),
+                      data: (roles) {
+                        // Ensure selected value exists in the list
+                        final validValue =
+                            roles.any((r) => r['id'] == _selectedRoleId)
+                            ? _selectedRoleId
+                            : null;
+
+                        return DropdownButtonFormField<String>(
+                          key: ValueKey('role_$validValue'),
+                          initialValue: validValue,
+                          decoration: const InputDecoration(
+                            labelText: 'Role',
+                            prefixIcon: Icon(Icons.admin_panel_settings),
+                          ),
+                          items: roles.map((r) {
+                            return DropdownMenuItem(
+                              value: r['id'] as String,
+                              child: Text(r['roleName'] as String),
+                            );
+                          }).toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedRoleId = val),
+                          validator: (val) => val == null ? 'Required' : null,
+                        );
+                      },
                       loading: () => const LinearProgressIndicator(),
                       error: (err, _) => Text('Error loading roles: $err'),
                     ),
                     const SizedBox(height: 16),
                     deptsAsync.when(
-                      data: (depts) => DropdownButtonFormField<String>(
-                        value: _selectedDepartmentId,
-                        decoration: const InputDecoration(
-                          labelText: 'Department',
-                          prefixIcon: Icon(Icons.business),
-                        ),
-                        items: depts.map((d) {
-                          return DropdownMenuItem(
-                            value: d['id'] as String,
-                            child: Text(d['departmentName'] as String),
-                          );
-                        }).toList(),
-                        onChanged: (val) =>
-                            setState(() => _selectedDepartmentId = val),
-                        validator: (val) => val == null ? 'Required' : null,
-                      ),
+                      data: (depts) {
+                        // Ensure selected value exists in the list
+                        final validValue =
+                            depts.any((d) => d['id'] == _selectedDepartmentId)
+                            ? _selectedDepartmentId
+                            : null;
+
+                        return DropdownButtonFormField<String>(
+                          key: ValueKey('dept_$validValue'),
+                          initialValue: validValue,
+                          decoration: const InputDecoration(
+                            labelText: 'Department',
+                            prefixIcon: Icon(Icons.business),
+                          ),
+                          items: depts.map((d) {
+                            return DropdownMenuItem(
+                              value: d['id'] as String,
+                              child: Text(d['departmentName'] as String),
+                            );
+                          }).toList(),
+                          onChanged: (val) =>
+                              setState(() => _selectedDepartmentId = val),
+                          validator: (val) => val == null ? 'Required' : null,
+                        );
+                      },
                       loading: () => const LinearProgressIndicator(),
                       error: (err, _) =>
                           Text('Error loading departments: $err'),
@@ -208,8 +226,9 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null || value.isEmpty) return 'Required';
-                        if (int.tryParse(value) == null)
+                        if (int.tryParse(value) == null) {
                           return 'Invalid number';
+                        }
                         return null;
                       },
                     ),

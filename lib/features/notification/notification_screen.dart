@@ -50,7 +50,7 @@ class NotificationScreen extends ConsumerWidget {
                 final notification = notifications[index];
                 return ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
                     child: const Icon(
                       Icons.notifications,
                       color: AppTheme.primary,

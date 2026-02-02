@@ -24,12 +24,6 @@ class TeamManagementScreen extends ConsumerWidget {
             return const Center(child: Text('Profile information not found'));
           }
 
-          if (profile.departmentId == null) {
-            return const Center(
-              child: Text('Department information not found'),
-            );
-          }
-
           final teamAsync = ref.watch(
             teamEmployeesProvider(profile.departmentId),
           );

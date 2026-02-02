@@ -21,27 +21,16 @@ class ActivityLog {
 
   factory ActivityLog.fromJson(Map<String, dynamic> json) {
     return ActivityLog(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      username: json['username'] as String?,
-      action: json['action'] as String,
-      targetType: json['targetType'] as String,
-      targetId: json['targetId'] as String,
-      details: json['details'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: json['id'] ?? '',
+      userId: json['userId'] ?? '',
+      username: json['username'],
+      action: json['action'] ?? '',
+      targetType: json['targetType'] ?? '',
+      targetId: json['targetId'] ?? '',
+      details: json['details'],
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'username': username,
-      'action': action,
-      'targetType': targetType,
-      'targetId': targetId,
-      'details': details,
-      'createdAt': createdAt.toIso8601String(),
-    };
   }
 }

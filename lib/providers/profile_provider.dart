@@ -91,7 +91,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
       // 2. Initialize Leave Balances for the new employee
       try {
         await _apiClient.post(
-          '${ApiConstants.leaveBalances}/initialize/${_userId}?year=${DateTime.now().year}',
+          '${ApiConstants.leaveBalances}/initialize/$_userId?year=${DateTime.now().year}',
         );
       } catch (e) {
         debugPrint('Failed to initialize balances: $e');

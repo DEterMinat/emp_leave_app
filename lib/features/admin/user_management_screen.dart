@@ -128,12 +128,12 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                         checkmarkColor: AppTheme.primary,
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ),
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
           Expanded(
             child: usersAsync.when(
