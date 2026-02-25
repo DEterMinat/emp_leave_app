@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leave_provider.dart';
+import '../../providers/attendance_provider.dart';
+import '../../models/attendance.dart';
 
 import '../leave/leave_history_screen.dart';
 import '../leave/leave_request_screen.dart';
@@ -31,6 +33,7 @@ class DashboardScreen extends ConsumerWidget {
     final requestsAsync = ref.watch(leaveRequestsProvider(employeeId));
     final balancesAsync = ref.watch(myLeaveBalancesProvider);
     final allRequestsAsync = ref.watch(allLeaveRequestsProvider);
+    final todayAttendanceAsync = ref.watch(todayAttendanceProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.gray50,
@@ -196,6 +199,13 @@ class DashboardScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Attendance / Check In - Check Out Card
+                      _AttendanceCard(
+                        todayAttendanceAsync: todayAttendanceAsync,
+                        ref: ref,
+                      ),
+                      const SizedBox(height: 24),
+
                       // Role-specific Header
                       if (roleName == 'hr' ||
                           roleName == 'manager' ||
@@ -540,6 +550,147 @@ class DashboardScreen extends ConsumerWidget {
       return '${months[start.month - 1]} ${start.day}, ${start.year}';
     }
     return '${months[start.month - 1]} ${start.day} - ${months[end.month - 1]} ${end.day}, ${end.year}';
+  }
+}
+
+class _AttendanceCard extends StatelessWidget {
+  final AsyncValue<Attendance?> todayAttendanceAsync;
+  final WidgetRef ref;
+
+  const _AttendanceCard({
+    required this.todayAttendanceAsync,
+    required this.ref,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.gray200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Today\'s Attendance',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.gray800,
+            ),
+          ),
+          const SizedBox(height: 12),
+          todayAttendanceAsync.when(
+            data: (attendance) {
+              if (attendance == null) {
+                // Not checked in yet
+                return _buildActionRow(context, attendance, ref);
+              } else {
+                return _buildActionRow(context, attendance, ref);
+              }
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (err, _) => Text('Error loading attendance: $err'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionRow(
+    BuildContext context,
+    Attendance? attendance,
+    WidgetRef ref,
+  ) {
+    bool isCheckedIn = attendance != null;
+    bool isCheckedOut = attendance?.checkOutTime != null;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: isCheckedIn
+                ? null
+                : () async {
+                    final notifier = ref.read(
+                      attendanceNotifierProvider.notifier,
+                    );
+                    final success = await notifier.checkIn();
+                    if (success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Checked In successfully'),
+                        ),
+                      );
+                    }
+                  },
+            icon: const Icon(Icons.login),
+            label: Text(
+              isCheckedIn
+                  ? 'Checked In: ${attendance.checkInTime!.toLocal().hour.toString().padLeft(2, '0')}:${attendance.checkInTime!.toLocal().minute.toString().padLeft(2, '0')}'
+                  : 'Check In',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.success,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: AppTheme.success.withValues(alpha: 0.5),
+              disabledForegroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: (!isCheckedIn || isCheckedOut)
+                ? null
+                : () async {
+                    final notifier = ref.read(
+                      attendanceNotifierProvider.notifier,
+                    );
+                    final success = await notifier.checkOut();
+                    if (success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Checked Out successfully'),
+                        ),
+                      );
+                    }
+                  },
+            icon: const Icon(Icons.logout),
+            label: Text(
+              isCheckedOut
+                  ? 'Checked Out: ${attendance!.checkOutTime!.toLocal().hour.toString().padLeft(2, '0')}:${attendance.checkOutTime!.toLocal().minute.toString().padLeft(2, '0')}'
+                  : 'Check Out',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.warning,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: AppTheme.warning.withValues(alpha: 0.5),
+              disabledForegroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

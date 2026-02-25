@@ -58,7 +58,20 @@ class TeamManagementScreen extends ConsumerWidget {
                         ),
                       ),
                       title: Text('${member.firstName} ${member.lastName}'),
-                      subtitle: Text(member.email),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(member.email),
+                          if (member.position != null)
+                            Text(
+                              member.position!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                        ],
+                      ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () {
                         Navigator.push(

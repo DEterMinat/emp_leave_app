@@ -34,6 +34,10 @@ class ApiConstants {
   static const String departments = '/departments';
   static const String roles = '/roles';
   static const String activityLogs = '/activitylogs';
+  static const String attendanceCheckIn = '/attendance/check-in';
+  static const String attendanceCheckOut = '/attendance/check-out';
+  static String attendanceToday(String id) => '/attendance/today/$id';
+  static String attendanceHistory(String id) => '/attendance/history/$id';
 
   // Helper to get full URL for static files (uploads)
   static String getFullUrl(String relativePath) {

@@ -112,6 +112,16 @@ class _EmployeeHeader extends StatelessWidget {
                   employee.departmentName ?? 'No Department',
                   style: TextStyle(color: AppTheme.gray600),
                 ),
+                if (employee.position != null)
+                  Text(
+                    employee.position!,
+                    style: TextStyle(color: AppTheme.gray600, fontSize: 13),
+                  ),
+                if (employee.salary != null)
+                  Text(
+                    'Salary: \$${employee.salary}',
+                    style: TextStyle(color: AppTheme.gray600, fontSize: 13),
+                  ),
                 const SizedBox(height: 4),
                 Text(
                   employee.email,
