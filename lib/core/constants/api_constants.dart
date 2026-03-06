@@ -38,6 +38,7 @@ class ApiConstants {
   static const String attendanceCheckOut = '/attendance/check-out';
   static String attendanceToday(String id) => '/attendance/today/$id';
   static String attendanceHistory(String id) => '/attendance/history/$id';
+  static String attendanceAll(DateTime? date) => date != null ? '/attendance/all?date=${date.toIso8601String()}' : '/attendance/all';
 
   // Helper to get full URL for static files (uploads)
   static String getFullUrl(String relativePath) {

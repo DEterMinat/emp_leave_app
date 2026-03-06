@@ -54,6 +54,18 @@ final attendanceHistoryProvider =
       }
     });
 
+final allAttendanceProvider = FutureProvider.family<List<Attendance>, DateTime?>(
+  (ref, date) async {
+    try {
+      final response = await ApiClient().get(ApiConstants.attendanceAll(date));
+      final List data = response.data as List;
+      return data.map((json) => Attendance.fromJson(json)).toList();
+    } catch (e) {
+      return [];
+    }
+  },
+);
+
 class AttendanceState {
   final bool isLoading;
   final String? error;

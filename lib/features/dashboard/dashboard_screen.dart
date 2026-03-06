@@ -18,6 +18,8 @@ import '../admin/user_management_screen.dart';
 import '../admin/department_management_screen.dart';
 import '../admin/leave_type_management_screen.dart';
 import '../admin/activity_logs_screen.dart';
+import '../attendance/attendance_history_screen.dart';
+import '../admin/attendance_management_screen.dart';
 import '../../providers/notification_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -28,11 +30,15 @@ class DashboardScreen extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final employeeId = authState.userId ?? '';
     final roleName = authState.roleName?.toLowerCase() ?? 'employee';
+    final canViewAllRequests =
+      roleName == 'hr' || roleName == 'manager' || roleName == 'admin';
 
     // Watch leave data
     final requestsAsync = ref.watch(leaveRequestsProvider(employeeId));
     final balancesAsync = ref.watch(myLeaveBalancesProvider);
-    final allRequestsAsync = ref.watch(allLeaveRequestsProvider);
+    final allRequestsAsync = canViewAllRequests
+      ? ref.watch(allLeaveRequestsProvider)
+      : null;
     final todayAttendanceAsync = ref.watch(todayAttendanceProvider);
 
     return Scaffold(
@@ -48,7 +54,7 @@ class DashboardScreen extends ConsumerWidget {
                 border: Border(bottom: BorderSide(color: AppTheme.gray200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -230,14 +236,17 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        allRequestsAsync.when(
-                          data: (requests) {
-                            final stats = DashboardStats.fromRequests(requests);
-                            return _TeamStatsRow(stats: stats);
-                          },
-                          loading: () => const LinearProgressIndicator(),
-                          error: (e, _) => Text('Error loading team stats: $e'),
-                        ),
+                        allRequestsAsync?.when(
+                              data: (requests) {
+                                final stats = DashboardStats.fromRequests(requests);
+                                return _TeamStatsRow(stats: stats);
+                              },
+                              loading: () => const LinearProgressIndicator(),
+                              error: (e, _) => Text(
+                                'Error loading team stats: $e',
+                              ),
+                            ) ??
+                            const SizedBox.shrink(),
                         const SizedBox(height: 24),
                       ],
 
@@ -572,7 +581,7 @@ class _AttendanceCard extends StatelessWidget {
         border: Border.all(color: AppTheme.gray200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -581,15 +590,36 @@ class _AttendanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Today\'s Attendance',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppTheme.gray800,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Today\'s Attendance',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.gray800,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AttendanceHistoryScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.history, size: 16),
+                label: const Text('History'),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  foregroundColor: AppTheme.primary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           todayAttendanceAsync.when(
             data: (attendance) {
               if (attendance == null) {
@@ -644,7 +674,7 @@ class _AttendanceCard extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: AppTheme.success.withValues(alpha: 0.5),
+              disabledBackgroundColor: AppTheme.success.withOpacity(0.5),
               disabledForegroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -680,7 +710,7 @@ class _AttendanceCard extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.warning,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: AppTheme.warning.withValues(alpha: 0.5),
+              disabledBackgroundColor: AppTheme.warning.withOpacity(0.5),
               disabledForegroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -734,6 +764,23 @@ class _AdminQuickActions extends StatelessWidget {
                   },
                 ),
               ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionCard(
+                title: 'Attendance',
+                subtitle: 'Daily Logs',
+                icon: Icons.fact_check_outlined,
+                color: AppTheme.warning,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AttendanceManagementScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
             if (roleName == 'hr' || roleName == 'admin') ...[
               const SizedBox(width: 12),
               Expanded(

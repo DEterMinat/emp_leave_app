@@ -12,6 +12,8 @@ class User {
   final String? lastName;
   final String? departmentId;
   final String? departmentName;
+  final String? position;
+  final double? salary;
 
   User({
     required this.id,
@@ -27,6 +29,8 @@ class User {
     this.lastName,
     this.departmentId,
     this.departmentName,
+    this.position,
+    this.salary,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -48,6 +52,8 @@ class User {
       lastName: json['lastName'],
       departmentId: json['departmentId'],
       departmentName: json['departmentName'],
+      position: json['position'],
+      salary: json['salary'] != null ? (json['salary'] is int ? (json['salary'] as int).toDouble() : json['salary'] as double) : null,
     );
   }
 
@@ -64,6 +70,8 @@ class User {
       'lastName': lastName,
       'departmentId': departmentId,
       'departmentName': departmentName,
+      'position': position,
+      'salary': salary,
     };
   }
 }

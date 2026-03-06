@@ -7,6 +7,7 @@ class AppTheme {
   static const Color success = Color(0xFF10B981); // --success: #10b981
   static const Color warning = Color(0xFFF59E0B); // --warning: #f59e0b
   static const Color danger = Color(0xFFEF4444); // --danger: #ef4444
+  static const Color info = Color(0xFF3B82F6);  // --info: #3b82f6
 
   // Purple for gradient
   static const Color purple = Color(0xFF7C3AED);
@@ -16,6 +17,7 @@ class AppTheme {
   static const Color gray50 = Color(0xFFF9FAFB);
   static const Color gray100 = Color(0xFFF3F4F6);
   static const Color gray200 = Color(0xFFE5E7EB);
+  static const Color gray300 = Color(0xFFD1D5DB);
   static const Color gray400 = Color(0xFF9CA3AF);
   static const Color gray500 = Color(0xFF6B7280);
   static const Color gray600 = Color(0xFF4B5563);
@@ -81,7 +83,7 @@ class AppTheme {
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
         elevation: 0,
-        shadowColor: primary.withValues(alpha: 0.3),
+        shadowColor: primary.withOpacity(0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // 0.75rem
         ),

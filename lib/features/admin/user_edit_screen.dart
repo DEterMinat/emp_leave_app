@@ -22,6 +22,8 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
   late TextEditingController _quotaController;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
+  late TextEditingController _positionController;
+  late TextEditingController _salaryController;
   String? _selectedRoleId;
   String? _selectedDepartmentId;
 
@@ -37,6 +39,10 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
     );
     _firstNameController = TextEditingController(text: widget.user?.firstName);
     _lastNameController = TextEditingController(text: widget.user?.lastName);
+    _positionController = TextEditingController(text: widget.user?.position);
+    _salaryController = TextEditingController(
+      text: widget.user?.salary?.toString() ?? '',
+    );
     _selectedRoleId = widget.user?.roleId;
     _selectedDepartmentId = widget.user?.departmentId;
   }
@@ -50,6 +56,8 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
     _quotaController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _positionController.dispose();
+    _salaryController.dispose();
     super.dispose();
   }
 
@@ -232,6 +240,31 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
                         return null;
                       },
                     ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _positionController,
+                            decoration: const InputDecoration(
+                              labelText: 'Position',
+                              prefixIcon: Icon(Icons.badge_outlined),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _salaryController,
+                            decoration: const InputDecoration(
+                              labelText: 'Salary',
+                              prefixIcon: Icon(Icons.attach_money),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () => _save(context),
@@ -275,6 +308,8 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
       'firstName': _firstNameController.text,
       'lastName': _lastNameController.text,
       'departmentId': _selectedDepartmentId,
+      'position': _positionController.text,
+      'salary': double.tryParse(_salaryController.text),
     };
 
     final notifier = ref.read(userManagementProvider.notifier);

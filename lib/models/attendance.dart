@@ -1,6 +1,7 @@
 class Attendance {
   final String attendanceID;
   final String employeeID;
+  final String? employeeName;
   final DateTime attendanceDate;
   final DateTime? checkInTime;
   final DateTime? checkOutTime;
@@ -12,6 +13,7 @@ class Attendance {
   Attendance({
     required this.attendanceID,
     required this.employeeID,
+    this.employeeName,
     required this.attendanceDate,
     this.checkInTime,
     this.checkOutTime,
@@ -25,6 +27,7 @@ class Attendance {
     return Attendance(
       attendanceID: json['attendanceID'] ?? '',
       employeeID: json['employeeID'] ?? '',
+      employeeName: json['employeeName'],
       attendanceDate: DateTime.parse(json['attendanceDate']),
       checkInTime: json['checkInTime'] != null
           ? DateTime.parse(json['checkInTime']).toLocal()
@@ -47,6 +50,7 @@ class Attendance {
     return {
       'attendanceID': attendanceID,
       'employeeID': employeeID,
+      'employeeName': employeeName,
       'attendanceDate': attendanceDate.toIso8601String(),
       'checkInTime': checkInTime?.toUtc().toIso8601String(),
       'checkOutTime': checkOutTime?.toUtc().toIso8601String(),

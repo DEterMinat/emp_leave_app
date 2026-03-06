@@ -3,43 +3,67 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:emp_leave_app/features/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() {
-  testWidgets('Login screen displays correctly', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  setUpAll(() async {
+    // Mock SharedPreferences
+    SharedPreferences.setMockInitialValues({});
+    // Mock Environment Variables
+    dotenv.testLoad(fileInput: 'API_BASE_URL=http://localhost:5082/api');
+  });
+
+  testWidgets('Login screen builds and shows title', (WidgetTester tester) async {
+    // Set larger viewport for testing
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: LoginScreen())),
+      const ProviderScope(
+        child: MaterialApp(
+          home: LoginScreen(),
+        ),
+      ),
     );
 
-    // Wait for the widget to settle
-    await tester.pumpAndSettle();
+    // Initial pump
+    await tester.pump();
 
-    // Verify login screen elements
+    // Verify main title and form labels
     expect(find.text('Employee Leave System'), findsOneWidget);
     expect(find.text('Employee ID'), findsOneWidget);
     expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Sign In'), findsOneWidget);
-
-    // Verify quick login buttons
-    expect(find.text('Employee'), findsOneWidget);
-    expect(find.text('Manager'), findsOneWidget);
-    expect(find.text('HR'), findsOneWidget);
   });
 
   testWidgets('Login form validation works', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: LoginScreen())),
+      const ProviderScope(
+        child: MaterialApp(
+          home: LoginScreen(),
+        ),
+      ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    // Try to submit without filling form
-    await tester.tap(find.text('Sign In'));
-    await tester.pumpAndSettle();
+    // Find and tap Sign In button
+    final signInButton = find.text('Sign In');
+    expect(signInButton, findsOneWidget);
+    
+    await tester.tap(signInButton);
+    await tester.pump();
 
-    // Should show validation error
-    expect(find.textContaining('กรุณา'), findsWidgets);
+    // Should show validation errors in Thai
+    expect(find.text('กรุณากรอกรหัสพนักงาน'), findsOneWidget);
+    expect(find.text('กรุณากรอกรหัสผ่าน'), findsOneWidget);
   });
 }

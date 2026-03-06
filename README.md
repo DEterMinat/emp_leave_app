@@ -9,9 +9,11 @@ Cross-platform mobile application for Employee Leave Management System with real
 ## ✨ Features
 
 - 🔐 **JWT Authentication** - Secure login with token persistence
-- 📊 **Dashboard** - Leave balance overview and recent requests
+- 📊 **Dashboard** - Leave balance overview and attendance status
+- 🕒 **Attendance** - One-tap Check-In/Out with auto-late detection
 - 📝 **Leave Requests** - Submit with file attachments
-- 📜 **Leave History** - View and cancel pending requests
+- 📜 **History** - Attendance logs and Leave request tracking
+- 👔 **Management** - HR view of team attendance and requests
 - 👤 **Profile Management** - Update personal information
 - 🔔 **Real-time Notifications** - SignalR + Firebase Cloud Messaging
 - 🌐 **PWA Support** - Deploy as Progressive Web App
