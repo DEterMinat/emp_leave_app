@@ -4,15 +4,28 @@ import '../core/constants/api_constants.dart';
 import '../models/attendance.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-final employeeIdProvider = FutureProvider<String?>((ref) async {
+Future<String?> _resolveAttendanceIdentifier() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getString(StorageKeys.employeeId);
+  final employeeId = prefs.getString(StorageKeys.employeeId);
+  if (employeeId != null && employeeId.isNotEmpty) {
+    return employeeId;
+  }
+
+  final userId = prefs.getString(StorageKeys.userId);
+  if (userId != null && userId.isNotEmpty) {
+    return userId;
+  }
+
+  return null;
+}
+
+final employeeIdProvider = FutureProvider<String?>((ref) async {
+  return _resolveAttendanceIdentifier();
 });
 
 // Provides today's attendance for the logged-in employee
 final todayAttendanceProvider = FutureProvider<Attendance?>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
-  final employeeId = prefs.getString(StorageKeys.employeeId);
+  final employeeId = await _resolveAttendanceIdentifier();
 
   if (employeeId == null || employeeId.isEmpty) return null;
 
@@ -57,17 +70,16 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<bool> checkIn({String? notes}) async {
     state = AttendanceState(isLoading: true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final employeeId = prefs.getString(StorageKeys.employeeId);
+      final employeeId = await _resolveAttendanceIdentifier();
 
       if (employeeId == null) {
-        state = AttendanceState(error: 'Employee ID not found');
+        state = AttendanceState(error: 'Employee ID not found. Please login again.');
         return false;
       }
 
       await ApiClient().post(
         ApiConstants.attendanceCheckIn,
-        data: {'employeeId': employeeId, 'notes': notes},
+        data: {'employeeID': employeeId, 'notes': notes},
       );
 
       // Refresh today's attendance
@@ -84,17 +96,16 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   Future<bool> checkOut({String? notes}) async {
     state = AttendanceState(isLoading: true);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final employeeId = prefs.getString(StorageKeys.employeeId);
+      final employeeId = await _resolveAttendanceIdentifier();
 
       if (employeeId == null) {
-        state = AttendanceState(error: 'Employee ID not found');
+        state = AttendanceState(error: 'Employee ID not found. Please login again.');
         return false;
       }
 
       await ApiClient().post(
         ApiConstants.attendanceCheckOut,
-        data: {'employeeId': employeeId, 'notes': notes},
+        data: {'employeeID': employeeId, 'notes': notes},
       );
 
       // Refresh today's attendance

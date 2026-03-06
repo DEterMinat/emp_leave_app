@@ -55,16 +55,44 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this._apiClient) : super(AuthState());
 
+  Future<void> _cacheEmployeeId(String userId, SharedPreferences prefs) async {
+    try {
+      final response = await _apiClient.get('${ApiConstants.employees}/user/$userId');
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        final employeeId = data['id']?.toString();
+        if (employeeId != null && employeeId.isNotEmpty) {
+          await prefs.setString(StorageKeys.employeeId, employeeId);
+          return;
+        }
+      }
+    } catch (_) {
+      // fallback below
+    }
+
+    await prefs.setString(StorageKeys.employeeId, userId);
+  }
+
   Future<void> checkAuth() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString(StorageKeys.token);
 
     if (token != null) {
       _apiClient.setToken(token);
+      final userId = prefs.getString(StorageKeys.userId);
+
+      if (userId != null && userId.isNotEmpty) {
+        final employeeId = prefs.getString(StorageKeys.employeeId);
+        if (employeeId == null || employeeId.isEmpty) {
+          await _cacheEmployeeId(userId, prefs);
+        }
+      }
+
       state = AuthState(
         isAuthenticated: true,
         token: token,
-        userId: prefs.getString(StorageKeys.userId),
+        userId: userId,
         username: prefs.getString(StorageKeys.username),
         roleId: prefs.getString(StorageKeys.roleId),
         roleName: prefs.getString(StorageKeys.roleName),
@@ -95,6 +123,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       // Set token in API client
       _apiClient.setToken(loginResponse.token);
+
+      // Cache employee id for attendance flow
+      await _cacheEmployeeId(loginResponse.userId, prefs);
 
       state = AuthState(
         isAuthenticated: true,

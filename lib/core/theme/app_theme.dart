@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Colors matching frontend CSS
@@ -56,12 +55,12 @@ class AppTheme {
       brightness: Brightness.light,
     ),
     scaffoldBackgroundColor: gray50,
-    textTheme: GoogleFonts.interTextTheme(),
+    textTheme: ThemeData.light().textTheme,
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
-      titleTextStyle: GoogleFonts.inter(
+      titleTextStyle: const TextStyle(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: gray800,
@@ -86,7 +85,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12), // 0.75rem
         ),
-        textStyle: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -116,6 +115,6 @@ class AppTheme {
       seedColor: primary,
       brightness: Brightness.dark,
     ),
-    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+    textTheme: ThemeData.dark().textTheme,
   );
 }
