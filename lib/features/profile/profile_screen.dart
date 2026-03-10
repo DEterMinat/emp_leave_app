@@ -130,7 +130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             border: Border.all(color: Colors.white, width: 4),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
+                                color: Colors.black.withOpacity(0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -168,10 +168,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       margin: const EdgeInsets.only(bottom: 24),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.warning.withValues(alpha: 0.1),
+                        color: AppTheme.warning.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppTheme.warning.withValues(alpha: 0.3),
+                          color: AppTheme.warning.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
@@ -424,7 +424,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppTheme.danger,
                         side: BorderSide(
-                          color: AppTheme.danger.withValues(alpha: 0.5),
+                          color: AppTheme.danger.withOpacity(0.5),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(

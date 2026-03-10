@@ -24,6 +24,7 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
   late TextEditingController _lastNameController;
   late TextEditingController _positionController;
   late TextEditingController _salaryController;
+  late TextEditingController _addressController;
   String? _selectedRoleId;
   String? _selectedDepartmentId;
 
@@ -43,6 +44,7 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
     _salaryController = TextEditingController(
       text: widget.user?.salary?.toString() ?? '',
     );
+    _addressController = TextEditingController(text: widget.user?.address);
     _selectedRoleId = widget.user?.roleId;
     _selectedDepartmentId = widget.user?.departmentId;
   }
@@ -58,6 +60,7 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
     _lastNameController.dispose();
     _positionController.dispose();
     _salaryController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -265,6 +268,15 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Address',
+                        prefixIcon: Icon(Icons.home_outlined),
+                      ),
+                      maxLines: 2,
+                    ),
                     const SizedBox(height: 32),
                     ElevatedButton(
                       onPressed: () => _save(context),
@@ -310,6 +322,7 @@ class _UserEditScreenState extends ConsumerState<UserEditScreen> {
       'departmentId': _selectedDepartmentId,
       'position': _positionController.text,
       'salary': double.tryParse(_salaryController.text),
+      'address': _addressController.text,
     };
 
     final notifier = ref.read(userManagementProvider.notifier);

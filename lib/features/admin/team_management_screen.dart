@@ -48,7 +48,7 @@ class TeamManagementScreen extends ConsumerWidget {
                     ),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: AppTheme.purple.withValues(alpha: 0.1),
+                        backgroundColor: AppTheme.purple.withOpacity(0.1),
                         child: Text(
                           member.firstName[0],
                           style: const TextStyle(

@@ -273,7 +273,7 @@ class _RequestCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.primary.withValues(alpha: 0.1),
+                  color: AppTheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
@@ -375,7 +375,7 @@ class _RequestCard extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.danger,
                   side: BorderSide(
-                    color: AppTheme.danger.withValues(alpha: 0.5),
+                    color: AppTheme.danger.withOpacity(0.5),
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                 ),

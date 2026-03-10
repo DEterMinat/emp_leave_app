@@ -80,10 +80,10 @@ class _ActivityLogCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: actionColor.withValues(alpha: 0.2), width: 1),
+        side: BorderSide(color: actionColor.withOpacity(0.2), width: 1),
       ),
       elevation: 0,
-      color: actionColor.withValues(alpha: 0.02),
+      color: actionColor.withOpacity(0.02),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
