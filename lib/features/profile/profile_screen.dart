@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/string_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../auth/login_screen.dart';
@@ -155,7 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         ),
                         Text(
                           profileState.employee?.departmentName ??
-                              (ref.watch(authProvider).roleName ?? 'Admin'),
+                              (ref.watch(authProvider).roleName ?? 'Admin').toTitleCase(),
                           style: TextStyle(color: AppTheme.gray500),
                         ),
                       ],

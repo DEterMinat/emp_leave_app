@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/string_utils.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/leave_provider.dart';
 import '../../providers/attendance_provider.dart';
@@ -94,7 +95,7 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ),
                         Text(
-                          '${authState.roleName ?? 'Employee'} - IT',
+                          '${(authState.roleName ?? 'Employee').toTitleCase()} - IT',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppTheme.gray500,
