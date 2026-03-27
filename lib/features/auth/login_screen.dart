@@ -49,12 +49,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _quickLogin(String role) {
-    // Demo quick login
-    _usernameController.text = role;
-    _passwordController.text = 'demo123';
-    _handleLogin();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -322,58 +316,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
 
-                          const SizedBox(height: 24),
-
-                          // Divider
-                          Row(
-                            children: [
-                              Expanded(child: Divider(color: AppTheme.gray200)),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                child: Text(
-                                  'Quick Login (Demo)',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppTheme.gray500,
-                                  ),
-                                ),
-                              ),
-                              Expanded(child: Divider(color: AppTheme.gray200)),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Quick login buttons (matching frontend)
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _QuickLoginButton(
-                                  label: 'Employee',
-                                  color: AppTheme.success,
-                                  onTap: () => _quickLogin('employee'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _QuickLoginButton(
-                                  label: 'Manager',
-                                  color: AppTheme.purple,
-                                  onTap: () => _quickLogin('manager'),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _QuickLoginButton(
-                                  label: 'HR',
-                                  color: AppTheme.warning,
-                                  onTap: () => _quickLogin('hr'),
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -395,39 +337,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _QuickLoginButton extends StatelessWidget {
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _QuickLoginButton({
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
