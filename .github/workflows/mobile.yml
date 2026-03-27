@@ -15,10 +15,6 @@ concurrency:
   group: "mobile-pages"
   cancel-in-progress: false
 
-defaults:
-  run:
-    working-directory: Mobile/emp_leave_app
-
 jobs:
   # =============================================
   # Stage 1: Static Analysis
@@ -34,7 +30,6 @@ jobs:
     - name: 🛠️ Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
         channel: 'stable'
         cache: true
 
@@ -86,7 +81,6 @@ jobs:
     - name: 🛠️ Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
         channel: 'stable'
         cache: true
 
@@ -111,7 +105,7 @@ jobs:
       if: always()
       with:
         name: flutter-coverage
-        path: Mobile/emp_leave_app/coverage/lcov.info
+        path: coverage/lcov.info
         retention-days: 14
 
     - name: 📈 Test Summary
@@ -153,7 +147,6 @@ jobs:
     - name: 🛠️ Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
         channel: 'stable'
         cache: true
 
@@ -177,7 +170,7 @@ jobs:
       if: success()
       with:
         name: android-release-apk
-        path: Mobile/emp_leave_app/build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/flutter-apk/app-release.apk
         retention-days: 14
 
   # =============================================
@@ -198,7 +191,6 @@ jobs:
     - name: 🛠️ Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: 'latest'
         channel: 'stable'
         cache: true
 
@@ -212,7 +204,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: web-release
-        path: Mobile/emp_leave_app/build/web
+        path: build/web
         retention-days: 14
 
     - name: 📄 Setup GitHub Pages
@@ -223,7 +215,7 @@ jobs:
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
       uses: actions/upload-pages-artifact@v3
       with:
-        path: Mobile/emp_leave_app/build/web
+        path: build/web
 
     - name: 🌐 Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
