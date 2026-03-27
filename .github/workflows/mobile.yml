@@ -208,6 +208,9 @@ jobs:
     - name: 🌐 Build Flutter Web (Release)
       run: flutter build web --release --base-href /emp_leave_app/
 
+    - name: 📄 Create 404.html for SPA routing
+      run: cp build/web/index.html build/web/404.html
+
     - name: 📤 Upload Web Build
       uses: actions/upload-artifact@v4
       with:
