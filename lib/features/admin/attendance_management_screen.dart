@@ -161,7 +161,7 @@ class _AttendanceUserCard extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppTheme.primary.withOpacity(0.1),
+            backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
             child: Text(name[0], style: const TextStyle(color: AppTheme.primary)),
           ),
           const SizedBox(width: 16),
@@ -205,7 +205,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(

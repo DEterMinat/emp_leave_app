@@ -43,7 +43,7 @@ jobs:
 
     - name: 📥 Get Dependencies
       run: |
-        touch .env
+        echo "API_BASE_URL=https://emp-leave-backend.onrender.com/api" > .env
         flutter pub get
 
     - name: 🔍 Run Analyzer
@@ -96,7 +96,7 @@ jobs:
 
     - name: 📥 Get Dependencies
       run: |
-        touch .env
+        echo "API_BASE_URL=https://emp-leave-backend.onrender.com/api" > .env
         flutter pub get
 
     - name: 🧪 Run Tests with Coverage
@@ -164,7 +164,7 @@ jobs:
 
     - name: 📥 Get Dependencies
       run: |
-        touch .env
+        echo "API_BASE_URL=https://emp-leave-backend.onrender.com/api" > .env
         flutter pub get
 
     - name: 📱 Build APK (Release)
@@ -202,14 +202,16 @@ jobs:
 
     - name: 📥 Get Dependencies
       run: |
-        touch .env
+        echo "API_BASE_URL=https://emp-leave-backend.onrender.com/api" > .env
         flutter pub get
 
     - name: 🌐 Build Flutter Web (Release)
       run: flutter build web --release --base-href /emp_leave_app/
 
-    - name: 📄 Create 404.html for SPA routing
-      run: cp build/web/index.html build/web/404.html
+    - name: 📄 Create 404.html & .nojekyll for GitHub Pages
+      run: |
+        cp build/web/index.html build/web/404.html
+        touch build/web/.nojekyll
 
     - name: 📤 Upload Web Build
       uses: actions/upload-artifact@v4

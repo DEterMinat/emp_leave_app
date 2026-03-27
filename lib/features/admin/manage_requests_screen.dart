@@ -330,15 +330,15 @@ class _StatusBadge extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'approved':
         color = AppTheme.success;
-        bgColor = AppTheme.success.withOpacity(0.1);
+        bgColor = AppTheme.success.withValues(alpha: 0.1);
         break;
       case 'rejected':
         color = AppTheme.danger;
-        bgColor = AppTheme.danger.withOpacity(0.1);
+        bgColor = AppTheme.danger.withValues(alpha: 0.1);
         break;
       default:
         color = AppTheme.warning;
-        bgColor = AppTheme.warning.withOpacity(0.1);
+        bgColor = AppTheme.warning.withValues(alpha: 0.1);
     }
 
     return Container(

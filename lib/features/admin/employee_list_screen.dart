@@ -35,7 +35,7 @@ class EmployeeListScreen extends ConsumerWidget {
                 ),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
                     child: Text(
                       emp.firstName[0],
                       style: const TextStyle(

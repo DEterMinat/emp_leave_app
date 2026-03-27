@@ -108,7 +108,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                       selected: _selectedRole == null,
                       onSelected: (selected) =>
                           setState(() => _selectedRole = null),
-                      selectedColor: AppTheme.primary.withOpacity(0.2),
+                      selectedColor: AppTheme.primary.withValues(alpha: 0.2),
                       checkmarkColor: AppTheme.primary,
                     ),
                   ),
@@ -124,7 +124,7 @@ class _UserManagementScreenState extends ConsumerState<UserManagementScreen> {
                             _selectedRole = selected ? roleName : null;
                           });
                         },
-                        selectedColor: AppTheme.primary.withOpacity(0.2),
+                        selectedColor: AppTheme.primary.withValues(alpha: 0.2),
                         checkmarkColor: AppTheme.primary,
                       ),
                     );
@@ -200,7 +200,7 @@ class _UserListItem extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: AppTheme.primary.withOpacity(0.1),
+          backgroundColor: AppTheme.primary.withValues(alpha: 0.1),
           child: Text(
             user.username[0].toUpperCase(),
             style: const TextStyle(

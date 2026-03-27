@@ -89,7 +89,7 @@ class _AttendanceHistoryCard extends StatelessWidget {
         border: Border.all(color: AppTheme.gray200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -215,19 +215,19 @@ class _StatusBadge extends StatelessWidget {
 
     switch (status.toLowerCase()) {
       case 'late':
-        bgColor = AppTheme.danger.withOpacity(0.1);
+        bgColor = AppTheme.danger.withValues(alpha: 0.1);
         textColor = AppTheme.danger;
         break;
       case 'absent':
-        bgColor = Colors.red.withOpacity(0.1);
+        bgColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red;
         break;
       case 'leave':
-        bgColor = AppTheme.info.withOpacity(0.1);
+        bgColor = AppTheme.info.withValues(alpha: 0.1);
         textColor = AppTheme.info;
         break;
       default: // Present
-        bgColor = AppTheme.success.withOpacity(0.1);
+        bgColor = AppTheme.success.withValues(alpha: 0.1);
         textColor = AppTheme.success;
     }
 

@@ -55,7 +55,7 @@ class DashboardScreen extends ConsumerWidget {
                 border: Border(bottom: BorderSide(color: AppTheme.gray200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -582,7 +582,7 @@ class _AttendanceCard extends StatelessWidget {
         border: Border.all(color: AppTheme.gray200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -675,7 +675,7 @@ class _AttendanceCard extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.success,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: AppTheme.success.withOpacity(0.5),
+              disabledBackgroundColor: AppTheme.success.withValues(alpha: 0.5),
               disabledForegroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -711,7 +711,7 @@ class _AttendanceCard extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.warning,
               foregroundColor: Colors.white,
-              disabledBackgroundColor: AppTheme.warning.withOpacity(0.5),
+              disabledBackgroundColor: AppTheme.warning.withValues(alpha: 0.5),
               disabledForegroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
@@ -955,9 +955,9 @@ class _QuickActionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -993,9 +993,9 @@ class _TeamStatsRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.primary.withOpacity(0.05),
+        color: AppTheme.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+        border: Border.all(color: AppTheme.primary.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -1050,7 +1050,7 @@ class _TeamStatItem extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 18),
@@ -1355,7 +1355,7 @@ class _ErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.danger.withOpacity(0.1),
+        color: AppTheme.danger.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
