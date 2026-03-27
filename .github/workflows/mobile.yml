@@ -42,7 +42,9 @@ jobs:
           ${{ runner.os }}-pub-
 
     - name: 📥 Get Dependencies
-      run: flutter pub get
+      run: |
+        touch .env
+        flutter pub get
 
     - name: 🔍 Run Analyzer
       run: |
@@ -93,7 +95,9 @@ jobs:
           ${{ runner.os }}-pub-
 
     - name: 📥 Get Dependencies
-      run: flutter pub get
+      run: |
+        touch .env
+        flutter pub get
 
     - name: 🧪 Run Tests with Coverage
       run: |
@@ -159,7 +163,9 @@ jobs:
           ${{ runner.os }}-pub-
 
     - name: 📥 Get Dependencies
-      run: flutter pub get
+      run: |
+        touch .env
+        flutter pub get
 
     - name: 📱 Build APK (Release)
       run: flutter build apk --release
@@ -195,7 +201,9 @@ jobs:
         cache: true
 
     - name: 📥 Get Dependencies
-      run: flutter pub get
+      run: |
+        touch .env
+        flutter pub get
 
     - name: 🌐 Build Flutter Web (Release)
       run: flutter build web --release
